@@ -304,6 +304,24 @@ function renderVideoGrid() {
 /* ==========================================================================
    4. VIDEO PLAYER MODAL & LOOP CONTROLS
    ========================================================================== */
+let playerControlsTimeout = null;
+
+function showPlayerOverlay() {
+  const header = document.querySelector('.player-header');
+  if (header) {
+    header.classList.remove('overlay-hidden');
+  }
+  clearTimeout(playerControlsTimeout);
+  // Auto-hide tombol kontrol setelah 2.8 detik saat video sedang berputar
+  if (isPlayerActive && mainVideoEl && !mainVideoEl.paused) {
+    playerControlsTimeout = setTimeout(() => {
+      if (header && isPlayerActive && !mainVideoEl.paused) {
+        header.classList.add('overlay-hidden');
+      }
+    }, 2800);
+  }
+}
+
 function playVideo(video) {
   if (!playerModalEl) return;
 
@@ -317,36 +335,39 @@ function playVideo(video) {
   }
   
   const driveId = getGoogleDriveId(video.file);
-  if (driveId) {
-    // Mode Google Drive Iframe Embed
-    if (mainVideoEl) {
-      mainVideoEl.pause();
-      mainVideoEl.style.display = 'none';
-      mainVideoEl.src = '';
-    }
-    if (mainIframeEl) {
-      mainIframeEl.style.display = 'block';
-      mainIframeEl.src = `https://drive.google.com/file/d/${driveId}/preview`;
-    }
-  } else {
-    // Mode Video HTML5 Biasa (Lokal atau Direct Link)
-    if (mainIframeEl) {
-      mainIframeEl.style.display = 'none';
-      mainIframeEl.src = '';
-    }
-    if (mainVideoEl) {
-      mainVideoEl.style.display = 'block';
-      mainVideoEl.src = video.file;
-      mainVideoEl.play().catch(err => {
-        console.warn("Autoplay dicegah browser, butuh interaksi pengguna:", err);
-      });
-    }
+  // Streaming langsung MP4 Google Drive (bersih, ringan, kontrol HP native yang bisa auto-hide)
+  const streamUrl = driveId
+    ? `https://drive.usercontent.google.com/download?id=${driveId}&confirm=t`
+    : video.file;
+
+  if (mainIframeEl) {
+    mainIframeEl.style.display = 'none';
+    mainIframeEl.src = '';
+  }
+
+  if (mainVideoEl) {
+    mainVideoEl.style.display = 'block';
+    mainVideoEl.src = streamUrl;
+    mainVideoEl.play().catch(err => {
+      console.warn("Autoplay dicegah browser, butuh interaksi pengguna:", err);
+    });
+
+    // Fallback otomatis jika stream langsung ditolak
+    mainVideoEl.onerror = () => {
+      if (driveId && mainIframeEl) {
+        console.warn("Stream langsung gagal, fallback ke iframe Google Drive...");
+        mainVideoEl.style.display = 'none';
+        mainIframeEl.style.display = 'block';
+        mainIframeEl.src = `https://drive.google.com/file/d/${driveId}/preview`;
+      }
+    };
   }
 
   playerModalEl.classList.add('active');
   isPlayerActive = true;
 
   updateLoopUI();
+  showPlayerOverlay();
 
   // Focus the prominent back button so user/remote can quickly exit
   setTimeout(() => {
@@ -356,6 +377,10 @@ function playVideo(video) {
 
 function closeVideoPlayer() {
   if (!playerModalEl) return;
+  clearTimeout(playerControlsTimeout);
+  const header = document.querySelector('.player-header');
+  if (header) header.classList.remove('overlay-hidden');
+
   if (mainVideoEl) {
     mainVideoEl.pause();
     mainVideoEl.currentTime = 0;
@@ -469,6 +494,17 @@ if (mainVideoEl) {
       closeVideoPlayer();
     }
   };
+}
+
+// Interaction listeners untuk auto-hide kontrol pemutar saat video berputar
+if (mainVideoEl) {
+  mainVideoEl.addEventListener('play', showPlayerOverlay);
+  mainVideoEl.addEventListener('pause', showPlayerOverlay);
+}
+if (playerModalEl) {
+  ['touchstart', 'mousemove', 'click', 'keydown'].forEach(evt => {
+    playerModalEl.addEventListener(evt, showPlayerOverlay, { passive: true });
+  });
 }
 
 /* ==========================================================================

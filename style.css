@@ -537,13 +537,19 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: 20;
   background: linear-gradient(180deg, rgba(20, 18, 16, 0.85) 0%, rgba(20, 18, 16, 0) 100%);
   padding: 24px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.player-header.overlay-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-24px);
 }
 
 .back-btn {
@@ -1209,10 +1215,16 @@ body {
 
   /* Player Modal di HP */
   .player-header {
-    padding: 12px 12px;
+    padding: 10px 12px;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: space-between;
+  }
+
+  .player-header.overlay-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-16px);
   }
 
   .back-btn {
