@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Digital Signage Media Display</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main Signage App Container -->
+  <div class="signage-app">
+
+    <!-- Top Header Bar -->
+    <header class="signage-header">
+      <div class="brand-section">
+        <div class="brand-logo-badge" title="TDS Media Kiosk">
+          <!-- Monitor Play SVG Icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 3H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.11-.9-2-2-2zm0 14H3V5h18v12zm-11-2l6-4.5-6-4.5v9z"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>DIGITAL DISPLAY</h1>
+          <p>Materi Video</p>
+        </div>
+      </div>
+
+      <!-- Right Header: Live Clock & Action Buttons -->
+      <div class="header-right">
+        <div class="clock-widget">
+          <div class="clock-time" id="clock-time">00:00:00</div>
+          <div class="clock-date" id="clock-date">Memuat tanggal...</div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" id="refresh-btn" title="Segarkan Halaman (F5)" aria-label="Segarkan">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="fullscreen-btn" title="Layar Penuh (F11 / Kiosk)" aria-label="Layar Penuh">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="filter-bar">
+      <!-- Category Chips -->
+      <div class="category-chips" id="category-chips" role="tablist">
+        <!-- Generated dynamically via JS -->
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-box-wrapper">
+        <input 
+          type="text" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="Cari materi video..." 
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <!-- Main Content Area: Video Grid -->
+    <main class="main-content">
+      <div class="section-title-wrap">
+        <h2 class="section-title">
+          <span>Koleksi Video</span>
+        </h2>
+        <span class="video-counter-badge" id="video-count-badge">Memuat daftar...</span>
+      </div>
+
+      <div class="video-grid" id="video-grid">
+        <!-- Video Cards generated dynamically via JS -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Remote TV Navigation Helper Toast -->
+  <div class="remote-helper">
+    <span>Navigasi Remote:</span>
+    <span class="kbd-badge">Panah</span>
+    <span>Pilih</span>
+    <span class="kbd-badge">OK</span>
+    <span>Putar</span>
+    <span class="kbd-badge">Back / Esc</span>
+    <span>Keluar</span>
+  </div>
+
+  <!-- Fullscreen Video Player Modal -->
+  <div class="player-modal" id="player-modal" role="dialog" aria-modal="true">
+    
+    <!-- Player Top Bar Overlay -->
+    <div class="player-header">
+      <button class="back-btn" id="player-back-btn" aria-label="Kembali ke Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      <div class="player-title-info">
+        <h2 id="player-title">Judul Video</h2>
+        <p id="player-category">Kategori</p>
+      </div>
+
+    <!-- Video Element Container -->
+    <div class="video-container">
+      <video id="main-video" class="main-video" controls playsinline preload="auto">
+        Browser Anda tidak mendukung pemutaran video HTML5.
+      </video>
+    </div>
+
+  <!-- Load Videos Data & Core Script -->
+  <script src="videos-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
