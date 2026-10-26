@@ -8,6 +8,25 @@ if (-not (Test-Path $videosDir)) {
     New-Item -ItemType Directory -Path $videosDir | Out-Null
 }
 
+# Simpan link Google Drive / URL online yang sudah pernah dimasukkan pengguna agar TIDAK TERHAPUS
+$preservedLinks = @{}
+if (Test-Path $outputJs) {
+    try {
+        $rawText = Get-Content -Path $outputJs -Raw -Encoding UTF8
+        if ($rawText -match '\[([\s\S]*)\]') {
+            $existingItems = ("[" + $matches[1] + "]") | ConvertFrom-Json
+            foreach ($it in $existingItems) {
+                if ($it.file -match '^https?://') {
+                    if ($it.description) { $preservedLinks[$it.description] = $it.file }
+                    if ($it.title) { $preservedLinks[$it.title] = $it.file }
+                }
+            }
+        }
+    } catch {
+        # Abaikan jika ada kesalahan parse file lama
+    }
+}
+
 $exts = @("*.mp4", "*.webm", "*.mkv", "*.mov", "*.avi")
 $files = Get-ChildItem -Path $videosDir -Include $exts -Recurse -File
 
@@ -32,9 +51,16 @@ foreach ($f in $files) {
     $cleanTitle = $cleanTitle -replace "\s+", " "
     $cleanTitle = (Get-Culture).TextInfo.ToTitleCase($cleanTitle.ToLower()).Trim()
     
+    $finalFile = $relPath
+    if ($preservedLinks.ContainsKey($f.Name)) {
+        $finalFile = $preservedLinks[$f.Name]
+    } elseif ($preservedLinks.ContainsKey($cleanTitle)) {
+        $finalFile = $preservedLinks[$cleanTitle]
+    }
+
     $videoObj = [ordered]@{
         title = $cleanTitle
-        file = $relPath
+        file = $finalFile
         category = $category
         description = $f.Name
     }
