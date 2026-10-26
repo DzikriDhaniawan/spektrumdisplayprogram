@@ -1,6 +1,6 @@
 /**
  * DAFTAR VIDEO SIGNAGE OTOMATIS
- * Diperbarui otomatis pada: 26 October 2026 13:55:57
+ * Diperbarui otomatis pada: 26 October 2026 14:35:31
  * Total Video Terdeteksi: 14
  */
 const LOCAL_VIDEOS = [

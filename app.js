@@ -30,6 +30,7 @@ const loopFolderBtnText = document.getElementById('loop-folder-btn-text');
 // Player Modal Elements
 const playerModalEl = document.getElementById('player-modal');
 const mainVideoEl = document.getElementById('main-video');
+const mainIframeEl = document.getElementById('main-iframe');
 const playerBackBtn = document.getElementById('player-back-btn');
 const playerTitleEl = document.getElementById('player-title');
 const playerCategoryEl = document.getElementById('player-category');
@@ -38,6 +39,15 @@ const playerLoopIcon = document.getElementById('player-loop-icon');
 const playerLoopLabel = document.getElementById('player-loop-label');
 const playerPrevBtn = document.getElementById('player-prev-btn');
 const playerNextBtn = document.getElementById('player-next-btn');
+
+/* Helper: Deteksi dan Ambil File ID Google Drive jika ada */
+function getGoogleDriveId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) return match[1];
+  return null;
+}
 
 /* ==========================================================================
    1. REAL-TIME CLOCK & DATE (Indonesian Format)
@@ -190,8 +200,31 @@ function renderVideoGrid() {
     `;
     thumbContainer.appendChild(fallbackEl);
 
-    // Native Video Frame Snapshot for 100% Reliable Offline Thumbnail
-    if (video.file) {
+    const driveId = getGoogleDriveId(video.file);
+    if (driveId) {
+      // 1. Google Drive Thumbnail Otomatis
+      const driveThumb = document.createElement('img');
+      driveThumb.className = 'thumbnail-img';
+      driveThumb.src = `https://drive.google.com/thumbnail?id=${driveId}&sz=w640`;
+      driveThumb.alt = video.title;
+      driveThumb.onload = () => {
+        driveThumb.style.display = 'block';
+        fallbackEl.style.display = 'none';
+      };
+      thumbContainer.appendChild(driveThumb);
+    } else if (video.poster) {
+      // 2. Custom Poster Image jika ada
+      const img = document.createElement('img');
+      img.className = 'thumbnail-img';
+      img.src = video.poster;
+      img.alt = video.title;
+      img.onload = () => {
+        img.style.display = 'block';
+        fallbackEl.style.display = 'none';
+      };
+      thumbContainer.appendChild(img);
+    } else if (video.file) {
+      // 3. Native Video Frame Snapshot untuk File Lokal Offline
       const previewVideo = document.createElement('video');
       previewVideo.className = 'thumbnail-preview-video';
       previewVideo.src = `${video.file}#t=2.0`;
@@ -208,7 +241,6 @@ function renderVideoGrid() {
       });
 
       previewVideo.addEventListener('loadedmetadata', () => {
-        // Lompat ke detik ke-2 atau 20% durasi agar tidak terkena frame hitam awal
         const seekTarget = Math.min(2.0, (previewVideo.duration || 5) * 0.2);
         previewVideo.currentTime = seekTarget;
       });
@@ -273,7 +305,7 @@ function renderVideoGrid() {
    4. VIDEO PLAYER MODAL & LOOP CONTROLS
    ========================================================================== */
 function playVideo(video) {
-  if (!playerModalEl || !mainVideoEl) return;
+  if (!playerModalEl) return;
 
   currentPlayingVideo = video;
   // Hanya tampilkan nama file saja (misal: "Branding Employer.1.mp4") tanpa teks detail lainnya
@@ -284,16 +316,37 @@ function playVideo(video) {
     playerCategoryEl.style.display = 'none';
   }
   
-  mainVideoEl.src = video.file;
+  const driveId = getGoogleDriveId(video.file);
+  if (driveId) {
+    // Mode Google Drive Iframe Embed
+    if (mainVideoEl) {
+      mainVideoEl.pause();
+      mainVideoEl.style.display = 'none';
+      mainVideoEl.src = '';
+    }
+    if (mainIframeEl) {
+      mainIframeEl.style.display = 'block';
+      mainIframeEl.src = `https://drive.google.com/file/d/${driveId}/preview`;
+    }
+  } else {
+    // Mode Video HTML5 Biasa (Lokal atau Direct Link)
+    if (mainIframeEl) {
+      mainIframeEl.style.display = 'none';
+      mainIframeEl.src = '';
+    }
+    if (mainVideoEl) {
+      mainVideoEl.style.display = 'block';
+      mainVideoEl.src = video.file;
+      mainVideoEl.play().catch(err => {
+        console.warn("Autoplay dicegah browser, butuh interaksi pengguna:", err);
+      });
+    }
+  }
+
   playerModalEl.classList.add('active');
   isPlayerActive = true;
 
   updateLoopUI();
-
-  // Auto Play
-  mainVideoEl.play().catch(err => {
-    console.warn("Autoplay dicegah browser, butuh interaksi pengguna:", err);
-  });
 
   // Focus the prominent back button so user/remote can quickly exit
   setTimeout(() => {
@@ -302,10 +355,16 @@ function playVideo(video) {
 }
 
 function closeVideoPlayer() {
-  if (!playerModalEl || !mainVideoEl) return;
-  mainVideoEl.pause();
-  mainVideoEl.currentTime = 0;
-  mainVideoEl.src = '';
+  if (!playerModalEl) return;
+  if (mainVideoEl) {
+    mainVideoEl.pause();
+    mainVideoEl.currentTime = 0;
+    mainVideoEl.src = '';
+  }
+  if (mainIframeEl) {
+    mainIframeEl.src = '';
+    mainIframeEl.style.display = 'none';
+  }
   playerModalEl.classList.remove('active');
   isPlayerActive = false;
   currentPlayingVideo = null;
