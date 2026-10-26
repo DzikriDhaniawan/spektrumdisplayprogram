@@ -307,28 +307,19 @@ function renderVideoGrid() {
 /* ==========================================================================
    4. VIDEO PLAYER MODAL & LOOP CONTROLS
    ========================================================================== */
-/* Helper: Deteksi sumber video (Lokal vs Google Drive) */
+/* Helper: Gunakan link Google Drive melalui Stream Proxy agar bebas ORB/CORS & bisa auto-hide + loop */
 function resolveVideoSource(video) {
-  // Cek apakah sedang dijalankan di lingkungan lokal (PC / Laptop / TV Mini PC)
-  const isLocal = window.location.protocol === 'file:' || 
-                  window.location.hostname === 'localhost' || 
-                  window.location.hostname === '127.0.0.1';
-
-  // 1. Jika lokal dan memiliki nama file lokal yang cocok di folder videos/
-  if (isLocal && video.category && video.description) {
-    return {
-      type: 'local',
-      src: `videos/${video.category}/${video.description}`,
-      driveId: getGoogleDriveId(video.file)
-    };
-  }
-
-  // 2. Jika di Vercel / Cloud / Online, gunakan direct stream Google Drive
   const driveId = getGoogleDriveId(video.file);
   if (driveId) {
+    // Jika dibuka dari file:/// di lokal, arahkan ke local stream proxy port 3456.
+    // Jika dibuka di Vercel / http(s), gunakan endpoint /api/stream relatif.
+    const streamEndpoint = (window.location.protocol === 'file:')
+      ? `http://localhost:3456/api/stream?id=${driveId}`
+      : `/api/stream?id=${driveId}`;
+
     return {
-      type: 'drive',
-      src: `https://drive.usercontent.google.com/download?id=${driveId}&confirm=t`,
+      type: 'drive-stream',
+      src: streamEndpoint,
       previewUrl: `https://drive.google.com/file/d/${driveId}/preview`,
       driveId: driveId
     };
@@ -402,6 +393,9 @@ function playVideo(video) {
   }
 
   if (mainVideoEl) {
+    // Hentikan stream video sebelumnya agar tidak membebani bandwidth Wi-Fi
+    mainVideoEl.onerror = null;
+    mainVideoEl.pause();
     mainVideoEl.style.display = 'block';
     mainVideoEl.referrerPolicy = 'no-referrer';
     mainVideoEl.setAttribute('playsinline', '');
@@ -424,19 +418,15 @@ function playVideo(video) {
       });
     }
 
-    // Fallback otomatis jika video lokal gagal dibuka atau stream ditolak
+    // Fallback otomatis jika stream proxy gagal
     mainVideoEl.onerror = (e) => {
-      console.warn("Video load error:", e);
-      if (sourceInfo.type === 'local' && sourceInfo.driveId) {
-        console.warn("Mencoba streaming Google Drive langsung...");
-        mainVideoEl.src = `https://drive.usercontent.google.com/download?id=${sourceInfo.driveId}&confirm=t`;
-        mainVideoEl.play().catch(() => showCenterPlayBtn());
-      } else if (sourceInfo.driveId && mainIframeEl) {
+      console.warn("Video stream error:", e);
+      if (sourceInfo.driveId && mainIframeEl) {
         console.warn("Fallback ke iframe preview Google Drive...");
         mainVideoEl.style.display = 'none';
         hideCenterPlayBtn();
         mainIframeEl.style.display = 'block';
-        mainIframeEl.src = `https://drive.google.com/file/d/${sourceInfo.driveId}/preview`;
+        mainIframeEl.src = sourceInfo.previewUrl;
       }
     };
   }
@@ -463,9 +453,10 @@ function closeVideoPlayer() {
   hideCenterPlayBtn();
 
   if (mainVideoEl) {
+    mainVideoEl.onerror = null;
     mainVideoEl.pause();
-    mainVideoEl.currentTime = 0;
-    mainVideoEl.src = '';
+    mainVideoEl.removeAttribute('src');
+    mainVideoEl.load();
   }
   if (mainIframeEl) {
     mainIframeEl.src = '';

@@ -11,12 +11,20 @@ echo [1/2] Memindai dan memperbarui daftar video...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scan-videos.ps1"
 
 echo.
-echo [2/2] Membuka Tampilan Digital Signage di Layar Penuh...
+echo [2/3] Menjalankan Google Drive Stream Proxy Server...
+where node >nul 2>nul
+if %errorlevel% equ 0 (
+    start /min "" node "%~dp0server.js"
+    timeout /t 1 >nul
+    set "TARGET_URL=http://localhost:3456"
+) else (
+    set "HTML_PATH=%~dp0index.html"
+    set "HTML_PATH=%HTML_PATH:\=/%"
+    set "TARGET_URL=file:///%HTML_PATH%"
+)
 
-:: Format path file menjadi URL browser yang valid
-set "HTML_PATH=%~dp0index.html"
-set "HTML_PATH=%HTML_PATH:\=/%"
-set "TARGET_URL=file:///%HTML_PATH%"
+echo.
+echo [3/3] Membuka Tampilan Digital Signage di Layar Penuh...
 
 :: 1. Coba Microsoft Edge (Bawaan Windows 10 & 11)
 where msedge >nul 2>nul
