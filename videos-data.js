@@ -1,7 +1,7 @@
 /**
  * DAFTAR VIDEO SIGNAGE OTOMATIS
- * Diperbarui otomatis pada: 26 October 2026 12:33:55
- * Total Video Terdeteksi: 16
+ * Diperbarui otomatis pada: 26 October 2026 13:55:57
+ * Total Video Terdeteksi: 14
  */
 const LOCAL_VIDEOS = [
     {
@@ -21,12 +21,6 @@ const LOCAL_VIDEOS = [
         "file":  "videos/Landscape/Factory Anniversary.mp4",
         "category":  "Landscape",
         "description":  "Factory Anniversary.mp4"
-    },
-    {
-        "title":  "Factory Visit (Riau)",
-        "file":  "videos/Landscape/FACTORY VISIT (RIAU).mp4",
-        "category":  "Landscape",
-        "description":  "FACTORY VISIT (RIAU).mp4"
     },
     {
         "title":  "Logodisp",
@@ -87,12 +81,6 @@ const LOCAL_VIDEOS = [
         "file":  "videos/Portrait/Penggunaan Spreader pada NPK.mp4",
         "category":  "Portrait",
         "description":  "Penggunaan Spreader pada NPK.mp4"
-    },
-    {
-        "title":  "Vertical - Factory Visit (Riau)-001",
-        "file":  "videos/Portrait/VERTICAL - FACTORY VISIT (RIAU)-001.mp4",
-        "category":  "Portrait",
-        "description":  "VERTICAL - FACTORY VISIT (RIAU)-001.mp4"
     },
     {
         "title":  "Vertical Mapping",

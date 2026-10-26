@@ -576,15 +576,14 @@ body {
 }
 
 .player-title-info h2 {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   letter-spacing: -0.01em;
+  margin: 0;
 }
 
 .player-title-info p {
-  font-size: 13px;
-  color: var(--border-color);
-  margin-top: 3px;
+  display: none !important;
 }
 
 .player-controls-group {
@@ -878,11 +877,13 @@ body {
   }
 
   .player-title-info h2 {
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
   }
 
   .player-title-info p {
-    font-size: 12px;
+    display: none !important;
   }
 
   .player-controls-group {
@@ -1042,27 +1043,240 @@ body {
   }
 
   .video-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
   }
 }
 
-/* 5. SMALL MOBILE / MINI SCREENS */
+/* 5. SMALL MOBILE / SMARTPHONE SCREENS (Tampilan Kompak Minimal 3 Kolom) */
 @media (max-width: 640px) {
   .signage-app {
-    padding: 14px;
+    padding: 10px 10px 24px 10px;
   }
 
+  /* Header Kompak Mobile */
   .signage-header {
-    padding: 14px 16px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    gap: 8px;
   }
 
+  .brand-logo-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .brand-info h1 {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .brand-info p {
+    font-size: 9px;
+    letter-spacing: 0.02em;
+  }
+
+  .clock-widget {
+    padding-right: 8px;
+  }
+
+  .clock-time {
+    font-size: 14px;
+  }
+
+  .clock-date {
+    font-size: 9px;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  /* Filter Bar Mobile */
+  .filter-bar {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .category-chips {
+    gap: 6px;
+    padding-bottom: 2px;
+  }
+
+  .chip-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .chip-btn .chip-count {
+    padding: 1px 5px;
+    font-size: 9px;
+  }
+
+  .search-box-wrapper {
+    width: 100%;
+  }
+
+  .search-input {
+    padding: 6px 12px 6px 30px;
+    font-size: 11.5px;
+  }
+
+  .search-icon {
+    left: 10px;
+    font-size: 12px;
+  }
+
+  /* Section Title Mobile */
+  .section-title-wrap {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .section-title {
+    font-size: 13px;
+  }
+
+  .video-counter-badge {
+    font-size: 10px;
+  }
+
+  .loop-folder-action-btn {
+    padding: 5px 10px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+
+  /* GRID 3 KOLOM DI HP (AT LEAST 3 PER ROW) */
   .video-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+  }
+
+  .video-card {
+    border-radius: 10px;
+  }
+
+  .thumbnail-container {
+    border-radius: 9px 9px 0 0;
+  }
+
+  .play-badge {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+    padding-left: 1px;
+  }
+
+  .card-body {
+    padding: 6px 6px 8px 6px;
+  }
+
+  .card-category-tag {
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+  }
+
+  .card-title {
+    font-size: 10.5px;
+    line-height: 1.25;
+    margin-bottom: 2px;
+    font-weight: 700;
+    -webkit-line-clamp: 2;
+  }
+
+  .card-desc {
+    font-size: 8.5px;
+    line-height: 1.2;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Player Modal di HP */
+  .player-header {
+    padding: 12px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .back-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    gap: 6px;
+    order: 1;
+  }
+
+  .player-controls-group {
+    order: 2;
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  .player-title-info {
+    order: 3;
+    width: 100%;
+    margin-top: 4px;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+  }
+
+  .player-title-info h2 {
+    font-size: 11.5px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .player-title-info p {
+    display: none !important;
+  }
+
+  .player-tool-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .player-loop-toggle-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .player-bottom-hint {
+    display: none;
   }
 
   .remote-helper {
-    display: none; /* Hide remote helper on small touchscreen phones */
+    display: none;
+  }
+}
+
+/* Extra Compact untuk HP Layar Kecil (<= 360px) */
+@media (max-width: 360px) {
+  .signage-app {
+    padding: 8px 6px 20px 6px;
+  }
+  .video-grid {
+    gap: 6px;
+  }
+  .card-body {
+    padding: 4px 4px 6px 4px;
+  }
+  .card-title {
+    font-size: 9.5px;
   }
 }

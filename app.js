@@ -150,7 +150,7 @@ function renderVideoGrid() {
 
   // Update badge counter
   if (videoCountBadgeEl) {
-    videoCountBadgeEl.textContent = `${filtered.length} materi siap putar`;
+    videoCountBadgeEl.textContent = `${filtered.length} file`;
   }
 
   videoGridEl.innerHTML = '';
@@ -276,8 +276,13 @@ function playVideo(video) {
   if (!playerModalEl || !mainVideoEl) return;
 
   currentPlayingVideo = video;
-  playerTitleEl.textContent = video.title;
-  playerCategoryEl.textContent = video.category ? `Folder: ${video.category} • File: ${video.description || ''}` : 'Digital Signage TV';
+  // Hanya tampilkan nama file saja (misal: "Branding Employer.1.mp4") tanpa teks detail lainnya
+  const fileName = video.description || (video.file ? video.file.split('/').pop() : video.title);
+  playerTitleEl.textContent = fileName;
+  if (playerCategoryEl) {
+    playerCategoryEl.textContent = '';
+    playerCategoryEl.style.display = 'none';
+  }
   
   mainVideoEl.src = video.file;
   playerModalEl.classList.add('active');

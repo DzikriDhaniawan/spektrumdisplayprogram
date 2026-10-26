@@ -20,12 +20,6 @@
     <!-- Top Header Bar -->
     <header class="signage-header">
       <div class="brand-section">
-        <div class="brand-logo-badge" title="TDS Media Kiosk">
-          <!-- Monitor Play SVG Icon -->
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M21 3H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.11-.9-2-2-2zm0 14H3V5h18v12zm-11-2l6-4.5-6-4.5v9z"/>
-          </svg>
-        </div>
         <div class="brand-info">
           <h1>DIGITAL DISPLAY</h1>
           <p>Materi Video</p>
@@ -74,10 +68,23 @@
     <!-- Main Content Area: Video Grid -->
     <main class="main-content">
       <div class="section-title-wrap">
-        <h2 class="section-title">
-          <span>Koleksi Video</span>
-        </h2>
-        <span class="video-counter-badge" id="video-count-badge">Memuat daftar...</span>
+        <div class="section-title-left">
+          <h2 class="section-title">
+            <span>Koleksi Video</span>
+          </h2>
+          <span class="video-counter-badge" id="video-count-badge">Memuat daftar...</span>
+        </div>
+
+        <!-- Tombol Loop Khusus Folder (Hanya aktif saat memilih folder tertentu, bukan 'Semua') -->
+        <button class="loop-folder-action-btn" id="loop-folder-action-btn" style="display: none;" title="Putar Berurutan Semua Video di Folder Ini">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+          <span id="loop-folder-btn-text">Putar Berurutan (Loop Folder Ini)</span>
+        </button>
       </div>
 
       <div class="video-grid" id="video-grid">
@@ -94,6 +101,8 @@
     <span>Pilih</span>
     <span class="kbd-badge">OK</span>
     <span>Putar</span>
+    <span class="kbd-badge">L</span>
+    <span>Mode Loop</span>
     <span class="kbd-badge">Back / Esc</span>
     <span>Keluar</span>
   </div>
@@ -109,10 +118,29 @@
         </svg>
       </button>
 
-      <div class="player-title-info">
-        <h2 id="player-title">Judul Video</h2>
-        <p id="player-category">Kategori</p>
+      <!-- Loop & Playback Controls Group -->
+      <div class="player-controls-group">
+        <button class="player-tool-btn" id="player-prev-btn" title="Video Sebelumnya di Folder Ini" aria-label="Sebelumnya">
+          ⏮
+        </button>
+
+        <!-- Tombol Pengatur Loop (1 Video / Folder Ini / Tanpa Loop) -->
+        <button class="player-loop-toggle-btn active-single" id="player-loop-btn" title="Klik untuk Mengganti Mode Loop" aria-label="Ganti Mode Loop">
+          <span id="player-loop-icon">🔂</span>
+          <span id="player-loop-label">Loop: 1 Video</span>
+        </button>
+
+        <button class="player-tool-btn" id="player-next-btn" title="Video Berikutnya di Folder Ini" aria-label="Berikutnya">
+          ⏭
+        </button>
       </div>
+
+      <!-- Kotak Judul / Nama File -->
+      <div class="player-title-info">
+        <h2 id="player-title">nama_file.mp4</h2>
+        <p id="player-category" style="display: none;"></p>
+      </div>
+    </div>
 
     <!-- Video Element Container -->
     <div class="video-container">
@@ -120,6 +148,12 @@
         Browser Anda tidak mendukung pemutaran video HTML5.
       </video>
     </div>
+
+    <!-- Bottom Hint -->
+    <div class="player-bottom-hint">
+      Tekan tombol <b>Back / Esc</b> untuk menu • Tekan <b>L</b> pada remote untuk ganti mode Loop
+    </div>
+  </div>
 
   <!-- Load Videos Data & Core Script -->
   <script src="videos-data.js"></script>
