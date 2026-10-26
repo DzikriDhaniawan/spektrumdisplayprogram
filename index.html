@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
   <title>Digital Signage Media Display</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,10 +145,22 @@
 
     <!-- Video Element Container (Mendukung Video Lokal & Google Drive Embed) -->
     <div class="video-container">
-      <video id="main-video" class="main-video" controls playsinline preload="auto">
+      <video id="main-video" class="main-video" playsinline preload="auto" referrerpolicy="no-referrer">
         Browser Anda tidak mendukung pemutaran video HTML5.
       </video>
-      <iframe id="main-iframe" class="main-iframe" allow="autoplay; fullscreen" style="display: none;"></iframe>
+      <iframe id="main-iframe" class="main-iframe" allow="autoplay; fullscreen" style="display: none;" referrerpolicy="no-referrer"></iframe>
+
+      <!-- Tombol Putar Tengah Besar (Muncul saat video pause / butuh interaksi) -->
+      <button class="player-center-play-btn" id="player-center-play-btn" aria-label="Putar Video">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+          <polygon points="6 3 20 12 6 21 6 3"></polygon>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Minimalist Bottom Progress Bar (auto-hides dengan header) -->
+    <div class="player-progress-container" id="player-progress-container">
+      <div class="player-progress-bar" id="player-progress-bar"></div>
     </div>
 
     <!-- Bottom Hint -->

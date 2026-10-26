@@ -1,7 +1,6 @@
 /**
  * DAFTAR VIDEO SIGNAGE OTOMATIS
- * Diperbarui otomatis pada: 26 October 2026 14:35:31
- * 
+ * Diperbarui otomatis pada: 26 October 2026 15:35:09
  * Total Video Terdeteksi: 14
  */
 const LOCAL_VIDEOS = [
@@ -22,12 +21,6 @@ const LOCAL_VIDEOS = [
         "file":  "https://drive.google.com/file/d/1keqzTemDsn_JOvzk7wDLjz7fMcnXR21i/view?usp=sharing",
         "category":  "Landscape",
         "description":  "Factory Anniversary.mp4"
-    },
-    {
-        "title":  "Factory Visit Riau",
-        "file":  "https://drive.google.com/file/d/126wlVf-eIjneoOngeIOs1CJNs3w6fIua/view?usp=sharing",
-        "category":  "Landscape",
-        "description":  "Factory Visit Riau.mp4"
     },
     {
         "title":  "Logodisp",
@@ -91,12 +84,6 @@ const LOCAL_VIDEOS = [
     },
     {
         "title":  "Vertical Mapping",
-        "file":  "https://drive.google.com/file/d/1ZH1KZr9_YKlrTZO7p10kaP_jUbw1tlKg/view?usp=sharing",
-        "category":  "Portrait",
-        "description":  "Vertical Mapping.mp4"
-    },
-        {
-        "title":  "Vertical Factory Visit Riau",
         "file":  "https://drive.google.com/file/d/1NAaRkv739Tk7OpAjZcU83kXpdqn2S5Xj/view?usp=sharing",
         "category":  "Portrait",
         "description":  "Vertical Mapping.mp4"

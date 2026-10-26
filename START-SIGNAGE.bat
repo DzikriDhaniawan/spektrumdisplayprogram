@@ -22,7 +22,7 @@ set "TARGET_URL=file:///%HTML_PATH%"
 where msedge >nul 2>nul
 if %errorlevel% equ 0 (
     echo Menggunakan Microsoft Edge Kiosk Mode...
-    start msedge --start-fullscreen --app="%TARGET_URL%"
+    start msedge --start-fullscreen --autoplay-policy=no-user-gesture-required --app="%TARGET_URL%"
     goto :finish
 )
 
@@ -30,7 +30,7 @@ if %errorlevel% equ 0 (
 where chrome >nul 2>nul
 if %errorlevel% equ 0 (
     echo Menggunakan Google Chrome Kiosk Mode...
-    start chrome --kiosk "%TARGET_URL%"
+    start chrome --kiosk --autoplay-policy=no-user-gesture-required "%TARGET_URL%"
     goto :finish
 )
 

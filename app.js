@@ -39,6 +39,9 @@ const playerLoopIcon = document.getElementById('player-loop-icon');
 const playerLoopLabel = document.getElementById('player-loop-label');
 const playerPrevBtn = document.getElementById('player-prev-btn');
 const playerNextBtn = document.getElementById('player-next-btn');
+const centerPlayBtn = document.getElementById('player-center-play-btn');
+const playerProgressContainer = document.getElementById('player-progress-container');
+const playerProgressBar = document.getElementById('player-progress-bar');
 
 /* Helper: Deteksi dan Ambil File ID Google Drive jika ada */
 function getGoogleDriveId(url) {
@@ -304,21 +307,78 @@ function renderVideoGrid() {
 /* ==========================================================================
    4. VIDEO PLAYER MODAL & LOOP CONTROLS
    ========================================================================== */
+/* Helper: Deteksi sumber video (Lokal vs Google Drive) */
+function resolveVideoSource(video) {
+  // Cek apakah sedang dijalankan di lingkungan lokal (PC / Laptop / TV Mini PC)
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+
+  // 1. Jika lokal dan memiliki nama file lokal yang cocok di folder videos/
+  if (isLocal && video.category && video.description) {
+    return {
+      type: 'local',
+      src: `videos/${video.category}/${video.description}`,
+      driveId: getGoogleDriveId(video.file)
+    };
+  }
+
+  // 2. Jika di Vercel / Cloud / Online, gunakan direct stream Google Drive
+  const driveId = getGoogleDriveId(video.file);
+  if (driveId) {
+    return {
+      type: 'drive',
+      src: `https://drive.usercontent.google.com/download?id=${driveId}&confirm=t`,
+      previewUrl: `https://drive.google.com/file/d/${driveId}/preview`,
+      driveId: driveId
+    };
+  }
+
+  return {
+    type: 'direct',
+    src: video.file,
+    driveId: null
+  };
+}
+
 let playerControlsTimeout = null;
+
+function showCenterPlayBtn() {
+  if (centerPlayBtn) {
+    centerPlayBtn.classList.remove('hidden');
+    centerPlayBtn.style.display = 'flex';
+  }
+}
+
+function hideCenterPlayBtn() {
+  if (centerPlayBtn) {
+    centerPlayBtn.classList.add('hidden');
+    setTimeout(() => {
+      if (centerPlayBtn.classList.contains('hidden')) {
+        centerPlayBtn.style.display = 'none';
+      }
+    }, 250);
+  }
+}
 
 function showPlayerOverlay() {
   const header = document.querySelector('.player-header');
   if (header) {
     header.classList.remove('overlay-hidden');
   }
+  if (playerProgressContainer) {
+    playerProgressContainer.classList.remove('overlay-hidden');
+  }
   clearTimeout(playerControlsTimeout);
-  // Auto-hide tombol kontrol setelah 2.8 detik saat video sedang berputar
+
+  // Auto-hide tombol kontrol & progress bar setelah 2.5 detik saat video sedang berputar
   if (isPlayerActive && mainVideoEl && !mainVideoEl.paused) {
     playerControlsTimeout = setTimeout(() => {
-      if (header && isPlayerActive && !mainVideoEl.paused) {
-        header.classList.add('overlay-hidden');
+      if (isPlayerActive && mainVideoEl && !mainVideoEl.paused) {
+        if (header) header.classList.add('overlay-hidden');
+        if (playerProgressContainer) playerProgressContainer.classList.add('overlay-hidden');
       }
-    }, 2800);
+    }, 2500);
   }
 }
 
@@ -326,19 +386,15 @@ function playVideo(video) {
   if (!playerModalEl) return;
 
   currentPlayingVideo = video;
-  // Hanya tampilkan nama file saja (misal: "Branding Employer.1.mp4") tanpa teks detail lainnya
+  // Hanya tampilkan nama file saja (misal: "Branding Employer.1.mp4") tanpa teks folder/kategori
   const fileName = video.description || (video.file ? video.file.split('/').pop() : video.title);
   playerTitleEl.textContent = fileName;
   if (playerCategoryEl) {
     playerCategoryEl.textContent = '';
     playerCategoryEl.style.display = 'none';
   }
-  
-  const driveId = getGoogleDriveId(video.file);
-  // Streaming langsung MP4 Google Drive (bersih, ringan, kontrol HP native yang bisa auto-hide)
-  const streamUrl = driveId
-    ? `https://drive.usercontent.google.com/download?id=${driveId}&confirm=t`
-    : video.file;
+
+  const sourceInfo = resolveVideoSource(video);
 
   if (mainIframeEl) {
     mainIframeEl.style.display = 'none';
@@ -347,18 +403,40 @@ function playVideo(video) {
 
   if (mainVideoEl) {
     mainVideoEl.style.display = 'block';
-    mainVideoEl.src = streamUrl;
-    mainVideoEl.play().catch(err => {
-      console.warn("Autoplay dicegah browser, butuh interaksi pengguna:", err);
-    });
+    mainVideoEl.referrerPolicy = 'no-referrer';
+    mainVideoEl.setAttribute('playsinline', '');
+    mainVideoEl.playsInline = true;
+    mainVideoEl.src = sourceInfo.src;
 
-    // Fallback otomatis jika stream langsung ditolak
-    mainVideoEl.onerror = () => {
-      if (driveId && mainIframeEl) {
-        console.warn("Stream langsung gagal, fallback ke iframe Google Drive...");
+    if (playerProgressBar) {
+      playerProgressBar.style.width = '0%';
+    }
+
+    // Coba putar otomatis
+    const playPromise = mainVideoEl.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        hideCenterPlayBtn();
+        showPlayerOverlay();
+      }).catch(err => {
+        console.warn("Autoplay ditahan browser, klik/sentuh layar untuk memutar:", err);
+        showCenterPlayBtn();
+      });
+    }
+
+    // Fallback otomatis jika video lokal gagal dibuka atau stream ditolak
+    mainVideoEl.onerror = (e) => {
+      console.warn("Video load error:", e);
+      if (sourceInfo.type === 'local' && sourceInfo.driveId) {
+        console.warn("Mencoba streaming Google Drive langsung...");
+        mainVideoEl.src = `https://drive.usercontent.google.com/download?id=${sourceInfo.driveId}&confirm=t`;
+        mainVideoEl.play().catch(() => showCenterPlayBtn());
+      } else if (sourceInfo.driveId && mainIframeEl) {
+        console.warn("Fallback ke iframe preview Google Drive...");
         mainVideoEl.style.display = 'none';
+        hideCenterPlayBtn();
         mainIframeEl.style.display = 'block';
-        mainIframeEl.src = `https://drive.google.com/file/d/${driveId}/preview`;
+        mainIframeEl.src = `https://drive.google.com/file/d/${sourceInfo.driveId}/preview`;
       }
     };
   }
@@ -371,7 +449,7 @@ function playVideo(video) {
 
   // Focus the prominent back button so user/remote can quickly exit
   setTimeout(() => {
-    playerBackBtn.focus();
+    if (playerBackBtn) playerBackBtn.focus();
   }, 100);
 }
 
@@ -380,6 +458,9 @@ function closeVideoPlayer() {
   clearTimeout(playerControlsTimeout);
   const header = document.querySelector('.player-header');
   if (header) header.classList.remove('overlay-hidden');
+  if (playerProgressContainer) playerProgressContainer.classList.remove('overlay-hidden');
+
+  hideCenterPlayBtn();
 
   if (mainVideoEl) {
     mainVideoEl.pause();
@@ -399,6 +480,10 @@ function closeVideoPlayer() {
 }
 
 function updateLoopUI() {
+  if (mainVideoEl) {
+    mainVideoEl.loop = (currentLoopMode === 'single');
+  }
+
   if (!playerLoopBtn) return;
   playerLoopBtn.classList.remove('active-single', 'active-folder', 'active-none');
 
@@ -439,8 +524,11 @@ function playNextVideoInFolder() {
   const folderVideos = allVideos.filter(v => v.category === folderName);
 
   if (folderVideos.length > 0) {
-    const currentIndex = folderVideos.findIndex(v => v.file === currentPlayingVideo.file);
-    const nextIndex = (currentIndex + 1) % folderVideos.length; // Loop kembali ke video pertama jika sampai akhir
+    let currentIndex = folderVideos.indexOf(currentPlayingVideo);
+    if (currentIndex === -1) {
+      currentIndex = folderVideos.findIndex(v => v.title === currentPlayingVideo.title || v.file === currentPlayingVideo.file);
+    }
+    const nextIndex = (currentIndex >= 0) ? (currentIndex + 1) % folderVideos.length : 0;
     playVideo(folderVideos[nextIndex]);
   }
 }
@@ -452,8 +540,11 @@ function playPrevVideoInFolder() {
   const folderVideos = allVideos.filter(v => v.category === folderName);
 
   if (folderVideos.length > 0) {
-    const currentIndex = folderVideos.findIndex(v => v.file === currentPlayingVideo.file);
-    const prevIndex = (currentIndex - 1 + folderVideos.length) % folderVideos.length;
+    let currentIndex = folderVideos.indexOf(currentPlayingVideo);
+    if (currentIndex === -1) {
+      currentIndex = folderVideos.findIndex(v => v.title === currentPlayingVideo.title || v.file === currentPlayingVideo.file);
+    }
+    const prevIndex = (currentIndex >= 0) ? (currentIndex - 1 + folderVideos.length) % folderVideos.length : 0;
     playVideo(folderVideos[prevIndex]);
   }
 }
@@ -472,6 +563,55 @@ if (playerNextBtn) {
 
 if (playerPrevBtn) {
   playerPrevBtn.onclick = playPrevVideoInFolder;
+}
+
+// Center play button click listener
+if (centerPlayBtn) {
+  centerPlayBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (mainVideoEl) {
+      mainVideoEl.play().then(() => {
+        hideCenterPlayBtn();
+        showPlayerOverlay();
+      }).catch(err => console.warn(err));
+    }
+  };
+}
+
+// Klik video atau container untuk toggle Play / Pause
+const videoContainerEl = document.querySelector('.video-container');
+if (videoContainerEl) {
+  videoContainerEl.onclick = (e) => {
+    if (e.target.closest('.player-header') || e.target.closest('.player-progress-container')) return;
+    if (e.target === centerPlayBtn || (centerPlayBtn && centerPlayBtn.contains(e.target))) return;
+    if (mainIframeEl && mainIframeEl.style.display !== 'none') return;
+
+    if (mainVideoEl) {
+      if (mainVideoEl.paused) {
+        mainVideoEl.play().then(() => {
+          hideCenterPlayBtn();
+          showPlayerOverlay();
+        }).catch(err => console.warn(err));
+      } else {
+        mainVideoEl.pause();
+        showCenterPlayBtn();
+        showPlayerOverlay();
+      }
+    }
+  };
+}
+
+// Progress Bar seeking click
+if (playerProgressContainer) {
+  playerProgressContainer.onclick = (e) => {
+    e.stopPropagation();
+    if (mainVideoEl && mainVideoEl.duration) {
+      const rect = playerProgressContainer.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      mainVideoEl.currentTime = pos * mainVideoEl.duration;
+      showPlayerOverlay();
+    }
+  };
 }
 
 // Event saat video selesai diputar
@@ -494,13 +634,27 @@ if (mainVideoEl) {
       closeVideoPlayer();
     }
   };
+
+  // Video timeupdate untuk update progress bar
+  mainVideoEl.addEventListener('timeupdate', () => {
+    if (mainVideoEl.duration && playerProgressBar) {
+      const percent = (mainVideoEl.currentTime / mainVideoEl.duration) * 100;
+      playerProgressBar.style.width = `${percent}%`;
+    }
+  });
+
+  mainVideoEl.addEventListener('play', () => {
+    hideCenterPlayBtn();
+    showPlayerOverlay();
+  });
+
+  mainVideoEl.addEventListener('pause', () => {
+    showCenterPlayBtn();
+    showPlayerOverlay();
+  });
 }
 
 // Interaction listeners untuk auto-hide kontrol pemutar saat video berputar
-if (mainVideoEl) {
-  mainVideoEl.addEventListener('play', showPlayerOverlay);
-  mainVideoEl.addEventListener('pause', showPlayerOverlay);
-}
 if (playerModalEl) {
   ['touchstart', 'mousemove', 'click', 'keydown'].forEach(evt => {
     playerModalEl.addEventListener(evt, showPlayerOverlay, { passive: true });
